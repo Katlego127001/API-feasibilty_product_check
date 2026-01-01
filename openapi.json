@@ -1,0 +1,145 @@
+{
+  "openapi": "3.0.2",
+  "info": {
+    "title": "Multi‑Product Feasibility API",
+    "version": "1.0.0",
+    "description": "API that accepts a product and geographic location, determines feasible radio technologies using an upstream service, caches results, maps technologies to products, and returns a structured response."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000",
+      "description": "Local development server"
+    }
+  ],
+  "paths": {
+    "/check-product-feasibility": {
+      "post": {
+        "summary": "Check product feasibility at a given location",
+        "description": "Calls the upstream Feasibility Service to determine which technologies are viable at the provided latitude and longitude.  Maps those technologies to the requested product and returns the best fit along with reasoning.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "latitude": {
+                    "type": "number",
+                    "format": "double",
+                    "example": -25.874,
+                    "description": "Latitude in decimal degrees"
+                  },
+                  "longitude": {
+                    "type": "number",
+                    "format": "double",
+                    "example": 28.194,
+                    "description": "Longitude in decimal degrees"
+                  },
+                  "requested_product": {
+                    "type": "string",
+                    "example": "Wireless Premium",
+                    "description": "Name of the requested product"
+                  }
+                },
+                "required": ["latitude", "longitude", "requested_product"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Feasibility response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "requested_product": {
+                      "type": "string"
+                    },
+                    "feasible_technologies": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "best_fit_product": {
+                      "type": ["string", "null"],
+                      "description": "The product selected based on feasibility (null if none are feasible)"
+                    },
+                    "reason": {
+                      "type": "string",
+                      "description": "Explanation of why the product was selected"
+                    },
+                    "cache_hit": {
+                      "type": "boolean",
+                      "description": "Indicates whether the response came from the cache",
+                      "nullable": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Upstream error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": { "type": "string" },
+                    "details": { "type": "string" }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "APIKeyHeader": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "APIKey",
+        "description": "API key required to authorise requests to the upstream Feasibility Service.  Set via the FEASIBILITY_API_KEY environment variable."
+      }
+    }
+  },
+  "security": [
+    {
+      "APIKeyHeader": []
+    }
+  ]
+}
