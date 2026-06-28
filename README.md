@@ -1,5 +1,27 @@
 # Multi‑Product Feasibility API
 
+### System Flow Diagram
+```mermaid
+flowchart LR
+  Client([Client / Postman]) --> Interceptor[Logging Interceptor]
+  Interceptor --> Guard{ApiKey Guard}
+  
+  Guard -- Valid --> CC[Currencies Controller]
+  Guard -- Valid --> AC[Accounts Controller]
+  Guard -- Valid --> BC[Billing Controller]
+
+  CC --> CS[Currencies Service]
+  AC --> AS[Accounts Service]
+  BC --> BS[Billing Service]
+
+  AS -. Validates Currency .-> CS
+  BS -. Fetches Account .-> AS
+  BS -. Fetches Currency .-> CS
+
+  CS --> CR[(Currencies Repo)]
+  AS --> AR[(Accounts Repo)]
+```
+
 This project contains a simple Node.js implementation of the multi‑product feasibility assessment described in the technical specification.  It exposes a RESTful API that accepts a product name and geographic coordinates, calls an upstream feasibility service to determine what technologies are viable, caches results to avoid repeated lookups, maps technologies back to the requested product and returns a structured response.
 
 > **Note**: The assessment environment does not permit installation of external software such as Redis or NPM packages.  To satisfy the caching requirement under these constraints, the implementation uses a plain JavaScript `Map` as an in‑memory cache.  The cache key combines the requested product and location; entries expire automatically after one hour.  In a production environment this cache would be replaced with a proper Redis client and server.
