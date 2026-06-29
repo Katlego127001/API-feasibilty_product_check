@@ -1,26 +1,5 @@
 # Multi‑Product Feasibility API
 
-### System Flow Diagram
-```mermaid
-flowchart LR
-  Client([Client / Postman]) --> Interceptor[Logging Interceptor]
-  Interceptor --> Guard{ApiKey Guard}
-  
-  Guard -- Valid --> CC[Currencies Controller]
-  Guard -- Valid --> AC[Accounts Controller]
-  Guard -- Valid --> BC[Billing Controller]
-
-  CC --> CS[Currencies Service]
-  AC --> AS[Accounts Service]
-  BC --> BS[Billing Service]
-
-  AS -. Validates Currency .-> CS
-  BS -. Fetches Account .-> AS
-  BS -. Fetches Currency .-> CS
-
-  CS --> CR[(Currencies Repo)]
-  AS --> AR[(Accounts Repo)]
-```
 
 This project contains a simple Node.js implementation of the multi‑product feasibility assessment described in the technical specification.  It exposes a RESTful API that accepts a product name and geographic coordinates, calls an upstream feasibility service to determine what technologies are viable, caches results to avoid repeated lookups, maps technologies back to the requested product and returns a structured response.
 
